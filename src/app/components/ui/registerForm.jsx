@@ -15,12 +15,25 @@ const RegisterForm = () => {
         qualities: [],
         licence: false
     });
-    const [qualities, setQualities] = useState({});
-    const [professions, setProfession] = useState();
+    const [qualities, setQualities] = useState([]);
+    const [professions, setProfession] = useState([]);
     const [errors, setErrors] = useState({});
     useEffect(() => {
-        api.professions.fetchAll().then((data) => setProfession(data));
-        api.qualities.fetchAll().then((data) => setQualities(data));
+        api.professions.fetchAll().then((data) => {
+            const professionsList = Object.keys(data).map(professionName => ({
+                label: data[professionName].name,
+                value: data[professionName]._id
+            }));
+            setProfession(professionsList);
+        });
+        api.qualities.fetchAll().then((data) => {
+            const qualitiesList = Object.keys(data).map(qualitiesName => ({
+                label: data[qualitiesName].name,
+                value: data[qualitiesName]._id,
+                color: data[qualitiesName].color
+            }));
+            setQualities(qualitiesList);
+        });
     }, []);
     const handleChange = (target) => {
         setData((prevState) => ({
@@ -73,19 +86,46 @@ const RegisterForm = () => {
     };
 
     const isValid = Object.keys(errors).length === 0 || false;
+    const getProfessionById = (id) => {
+        for (const prof of professions) {
+            if (prof.value === id) {
+                return { _id: prof.value, name: prof.label };
+            }
+        }
+    };
+    const getQualities = (elements) => {
+        const qualitiesArray = [];
+        for (const elem of elements) {
+            for (const quality in qualities) {
+                if (elem.value === qualities[quality].value) {
+                    qualitiesArray.push({
+                        _id: qualities[quality].value,
+                        name: qualities[quality].label,
+                        color: qualities[quality].color
+                    });
+                }
+            }
+        }
+        return qualitiesArray;
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         const isValid = validate();
         if (!isValid) return;
-        console.log(e);
+        const { profession, qualities } = data;
+        console.log({
+            ...data,
+            profession: getProfessionById(profession),
+            qualities: getQualities(qualities)
+        });
     };
     return (
-
         <form onSubmit={handleSubmit}>
             <TextField
                 label="Электронная почта"
-                name="email" value={data.email}
+                name="email"
+                value={data.email}
                 onChange={handleChange}
                 error={errors.email}
             />
@@ -98,9 +138,10 @@ const RegisterForm = () => {
                 error={errors.password}
             />
             <SelectField
-                label="Выберите вашу профессию"
+                label="Выбери свою профессию"
                 defaultOption="Choose..."
                 options={professions}
+                name="profession"
                 onChange={handleChange}
                 value={data.profession}
                 error={errors.profession}
@@ -114,13 +155,14 @@ const RegisterForm = () => {
                 value={data.sex}
                 name="sex"
                 onChange={handleChange}
-                label="Выберите ваш пол:"
+                label="Выберите ваш пол"
             />
             <MultiSelectField
                 options={qualities}
                 onChange={handleChange}
+                defaultValue={data.qualities}
                 name="qualities"
-                label="Выберите ваши качества:"
+                label="Выберите ваши качества"
             />
             <CheckBoxField
                 value={data.licence}
@@ -128,9 +170,15 @@ const RegisterForm = () => {
                 name="licence"
                 error={errors.licence}
             >
-                Подтвердить<a> лецинзионное соглашение </a>
+                Подтвердить <a>лицензионное соглашение</a>
             </CheckBoxField>
-            <button type="submit" disabled={!isValid} className="btn btn-primary w-100 mx-auto">Submit</button>
+            <button
+                className="btn btn-primary w-100 mx-auto"
+                type="submit"
+                disabled={!isValid}
+            >
+                Submit
+            </button>
         </form>
     );
 };
