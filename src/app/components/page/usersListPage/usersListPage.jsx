@@ -3,27 +3,24 @@ import PropTypes from "prop-types";
 import { paginate } from "../../../utils/paginate";
 import Pagination from "../../common/pagination";
 import api from "../../../api";
-import SearchStatus from "../../ui/searchStatus";
 import GroupList from "../../common/groupList";
+import SearchStatus from "../../ui/searchStatus";
 import UserTable from "../../ui/usersTable";
 import _ from "lodash";
 const UsersListPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [professions, setProfession] = useState();
-    const [selectedProf, setSelectedProf] = useState();
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState({ iter: "name", order: "asc" });
+    const [selectedProf, setSelectedProf] = useState();
+    const [sortBy, setSortBy] = useState({ path: "name", order: "asc" });
     const pageSize = 8;
-    const [users, setUsers] = useState(api.users.fetchAll());
+
+    const [users, setUsers] = useState();
     useEffect(() => {
         api.users.fetchAll().then((data) => setUsers(data));
     }, []);
     const handleDelete = (userId) => {
         setUsers(users.filter((user) => user._id !== userId));
-    };
-    const handleSearchQuery = ({ target }) => {
-        setSelectedProf(undefined);
-        setSearchQuery(target.value);
     };
     const handleToggleBookMark = (id) => {
         const newArray = users.map((user) => {
@@ -34,9 +31,11 @@ const UsersListPage = () => {
         });
         setUsers(newArray);
     };
+
     useEffect(() => {
         api.professions.fetchAll().then((data) => setProfession(data));
     }, []);
+
     useEffect(() => {
         setCurrentPage(1);
     }, [selectedProf, searchQuery]);
@@ -45,6 +44,11 @@ const UsersListPage = () => {
         if (searchQuery !== "") setSearchQuery("");
         setSelectedProf(item);
     };
+    const handleSearchQuery = ({ target }) => {
+        setSelectedProf(undefined);
+        setSearchQuery(target.value);
+    };
+
     const handlePageChange = (pageIndex) => {
         setCurrentPage(pageIndex);
     };
@@ -54,7 +58,12 @@ const UsersListPage = () => {
 
     if (users) {
         const filteredUsers = searchQuery
-            ? users.filter((user) => user.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1)
+            ? users.filter(
+                (user) =>
+                    user.name
+                        .toLowerCase()
+                        .indexOf(searchQuery.toLowerCase()) !== -1
+            )
             : selectedProf
                 ? users.filter(
                     (user) =>
@@ -62,12 +71,18 @@ const UsersListPage = () => {
                         JSON.stringify(selectedProf)
                 )
                 : users;
+
         const count = filteredUsers.length;
-        const sortedUsers = _.orderBy(filteredUsers, [sortBy.path], [sortBy.order]);
+        const sortedUsers = _.orderBy(
+            filteredUsers,
+            [sortBy.path],
+            [sortBy.order]
+        );
         const usersCrop = paginate(sortedUsers, currentPage, pageSize);
         const clearFilter = () => {
             setSelectedProf();
         };
+
         return (
             <div className="d-flex">
                 {professions && (
@@ -81,11 +96,11 @@ const UsersListPage = () => {
                             className="btn btn-secondary mt-2"
                             onClick={clearFilter}
                         >
+                            {" "}
                             Очистить
                         </button>
                     </div>
                 )}
-
                 <div className="d-flex flex-column">
                     <SearchStatus length={count} />
                     <input
@@ -101,7 +116,8 @@ const UsersListPage = () => {
                             onSort={handleSort}
                             selectedSort={sortBy}
                             onDelete={handleDelete}
-                            onToggleBookMark={handleToggleBookMark} />
+                            onToggleBookMark={handleToggleBookMark}
+                        />
                     )}
                     <div className="d-flex justify-content-center">
                         <Pagination
@@ -114,8 +130,8 @@ const UsersListPage = () => {
                 </div>
             </div>
         );
-    };
-    return "loading";
+    }
+    return "loading...";
 };
 UsersListPage.propTypes = {
     users: PropTypes.array
