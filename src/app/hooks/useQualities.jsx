@@ -19,8 +19,7 @@ export const QualitiesProvider = ({ children }) => {
                 setQualities(content);
                 setIsLoading(false);
             } catch (error) {
-                const { message } = error.response.data;
-                setError(message);
+                errorCatcher(error);
             }
         };
         getQualities();
@@ -28,6 +27,10 @@ export const QualitiesProvider = ({ children }) => {
     const getQuality = (id) => {
         return qualities.find((q) => q._id === id);
     };
+    function errorCatcher(error) {
+        const { message } = error.response.data;
+        setError(message);
+    }
     useEffect(() => {
         if (error !== null) {
             toast(error);
