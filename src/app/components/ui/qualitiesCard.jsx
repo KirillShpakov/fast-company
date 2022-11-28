@@ -16,7 +16,6 @@ const QualitiesCard = ({ data }) => {
         </div>
     );
 };
-
 QualitiesCard.propTypes = {
     data: PropTypes.array
 };

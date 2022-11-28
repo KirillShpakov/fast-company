@@ -9,8 +9,11 @@ const RadioField = ({ options, name, onChange, value, label }) => {
         <div className="mb-4">
             <label className="form-label">{label}</label>
             <div>
-                {options.map(option => (
-                    <div key={option.name + "_" + option.value} className="form-check form-check-inline">
+                {options.map((option) => (
+                    <div
+                        key={option.name + "_" + option.value}
+                        className="form-check form-check-inline"
+                    >
                         <input
                             className="form-check-input"
                             type="radio"
@@ -32,6 +35,7 @@ const RadioField = ({ options, name, onChange, value, label }) => {
         </div>
     );
 };
+
 RadioField.propTypes = {
     options: PropTypes.array,
     name: PropTypes.string,
