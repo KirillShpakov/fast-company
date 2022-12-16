@@ -7,47 +7,32 @@ import RadioField from "../../common/form/radioField";
 import MultiSelectField from "../../common/form/multiSelectField";
 import BackHistoryButton from "../../common/backButton";
 import { useAuth } from "../../../hooks/useAuth";
-import { useProfessions } from "../../../hooks/useProfession";
-import { useQualities } from "../../../hooks/useQualities";
+import { useSelector } from "react-redux";
+import {
+    getQualities,
+    getQualitiesLoadingStatus
+} from "../../../store/qualities";
+import { getProfessions, getProfessionsLoadingStatus } from "../../../store/professions";
 
 const EditUserPage = () => {
     const history = useHistory();
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState();
     const { currentUser, updateUserData } = useAuth();
-    const { professions, isLoading: professionLoading } = useProfessions();
-    const { qualities, isLoading: qualitiesLoading } = useQualities();
-    const [errors, setErrors] = useState({});
-    const professionsList = professions.map((p) => ({
-        label: p.name,
-        value: p._id
-    }));
+    const qualities = useSelector(getQualities());
+    const qualitiesLoading = useSelector(getQualitiesLoadingStatus());
     const qualitiesList = qualities.map((q) => ({
         label: q.name,
         value: q._id
     }));
-    // const getProfessionById = (id) => {
-    //     for (const prof of professions) {
-    //         if (prof.value === id) {
-    //             return { _id: prof.value, name: prof.label };
-    //         }
-    //     }
-    // };
-    // const getQualities = (elements) => {
-    //     const qualitiesArray = [];
-    //     for (const elem of elements) {
-    //         for (const quality in qualities) {
-    //             if (elem.value === qualities[quality].value) {
-    //                 qualitiesArray.push({
-    //                     _id: qualities[quality].value,
-    //                     name: qualities[quality].label,
-    //                     color: qualities[quality].color
-    //                 });
-    //             }
-    //         }
-    //     }
-    //     return qualitiesArray;
-    // };
+    const professions = useSelector(getProfessions());
+    const professionLoading = useSelector(getProfessionsLoadingStatus());
+    const professionsList = professions.map((p) => ({
+        label: p.name,
+        value: p._id
+    }));
+    const [errors, setErrors] = useState({});
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const isValid = validate();
@@ -56,6 +41,7 @@ const EditUserPage = () => {
             ...data,
             qualities: data.qualities.map((q) => q.value)
         });
+
         history.push(`/users/${currentUser._id}`);
     };
     function getQualitiesListByIds(qualitiesIds) {
@@ -80,7 +66,8 @@ const EditUserPage = () => {
     useEffect(() => {
         if (!professionLoading && !qualitiesLoading && currentUser && !data) {
             setData({
-                ...currentUser, qualities: transformData(currentUser.qualities)
+                ...currentUser,
+                qualities: transformData(currentUser.qualities)
             });
         }
     }, [professionLoading, qualitiesLoading, currentUser, data]);
